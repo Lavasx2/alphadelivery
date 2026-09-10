@@ -3,7 +3,9 @@ import { useMemo, useState } from "react";
 import { Flame } from "lucide-react";
 import { MENU_ITEMS, SUPPLEMENTS, formatPrice } from "@/lib/menu";
 import { listMenuItems } from "@/lib/menu-public.functions";
+import { localizeItem, localizeSupplement } from "@/lib/menu-i18n";
 import { useCart } from "@/lib/cart";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/menu")({
   loader: async () => {
@@ -44,33 +46,36 @@ export const Route = createFileRoute("/menu")({
 });
 
 function MenuPage() {
-  const { items: allItems } = Route.useLoaderData();
+  const { items: rawItems } = Route.useLoaderData();
   const { add } = useCart();
-  const [category, setCategory] = useState<string>("الكل");
+  const { t, lang } = useI18n();
+  const [category, setCategory] = useState<string | null>(null);
   const [addedId, setAddedId] = useState<string | null>(null);
+
+  const allItems = useMemo(
+    () => rawItems.map((i) => localizeItem(i, lang)),
+    [rawItems, lang]
+  );
 
   const categories = useMemo(
     () => Array.from(new Set(allItems.map((i) => i.category))),
     [allItems]
   );
 
-  const items =
-    category === "الكل"
-      ? allItems
-      : allItems.filter((i) => i.category === category);
+  const items = category
+    ? allItems.filter((i) => i.category === category)
+    : allItems;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-4xl font-black">المنيو</h1>
-      <p className="mt-2 text-muted-foreground">
-        كل أطباقنا محضّرة طازجة عند الطلب — اختر وأضف لسلتك
-      </p>
+      <h1 className="text-4xl font-black">{t("menu")}</h1>
+      <p className="mt-2 text-muted-foreground">{t("menuIntro")}</p>
 
       {/* Category filter */}
       <div className="mt-8 flex flex-wrap gap-2">
-        {["الكل", ...categories].map((c) => (
+        {[null, ...categories].map((c) => (
           <button
-            key={c}
+            key={c ?? "all"}
             onClick={() => setCategory(c)}
             className={`rounded-full px-5 py-2 text-sm font-bold transition-colors ${
               category === c
@@ -78,7 +83,7 @@ function MenuPage() {
                 : "border border-border bg-card text-muted-foreground hover:text-foreground"
             }`}
           >
-            {c}
+            {c ?? t("all")}
           </button>
         ))}
       </div>
@@ -101,7 +106,7 @@ function MenuPage() {
                 />
                 {item.popular && (
                   <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
-                    <Flame className="size-3" /> الأكثر طلباً
+                    <Flame className="size-3" /> {t("mostOrdered")}
                   </span>
                 )}
               </div>
@@ -132,7 +137,7 @@ function MenuPage() {
                       : "bg-primary text-primary-foreground hover:bg-primary/90"
                   }`}
                 >
-                  {addedId === item.id ? "تمت الإضافة ✓" : "أضف للسلة +"}
+                  {addedId === item.id ? t("added") : t("addToCart")}
                 </button>
               </div>
             </div>
@@ -142,15 +147,15 @@ function MenuPage() {
 
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {[
-          { title: "سوبليمون البيتزا", list: SUPPLEMENTS.pizza },
-          { title: "سوبليمون الطاكوس", list: SUPPLEMENTS.tacos },
+          { title: t("pizzaSupplements"), list: SUPPLEMENTS.pizza },
+          { title: t("tacosSupplements"), list: SUPPLEMENTS.tacos },
         ].map((block) => (
           <div key={block.title} className="rounded-2xl border border-border bg-card p-6">
             <h2 className="text-xl font-black text-primary">{block.title}</h2>
             <ul className="mt-4 space-y-2 text-sm">
               {block.list.map((s) => (
                 <li key={s.name} className="flex justify-between border-b border-border/60 pb-2">
-                  <span>{s.name}</span>
+                  <span>{localizeSupplement(s.name, lang)}</span>
                   <span className="font-bold">{formatPrice(s.price)}</span>
                 </li>
               ))}
@@ -161,4 +166,3 @@ function MenuPage() {
     </div>
   );
 }
-
