@@ -38,16 +38,18 @@ function CourierPage() {
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("courier_applications")
       .select("id,status,full_name")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1);
+    if (error) setErr(error.message);
     setApp(data?.[0] ?? null);
   }, [user]);
 
@@ -62,12 +64,21 @@ function CourierPage() {
     setErr(null);
     const { error } = await supabase.from("courier_applications").insert({
       user_id: user.id,
-      full_name: fullName,
-      phone,
-      vehicle: vehicle || null,
+      full_name: fullName.trim(),
+      phone: phone.trim(),
+      vehicle: vehicle.trim() || null,
     });
     if (error) setErr(error.message);
-    else await load();
+    else {
+      setSent(true);
+      await load();
+    }
+    setBusy(false);
+  }
+
+  async function refresh() {
+    setBusy(true);
+    await Promise.all([refreshRoles(), load()]);
     setBusy(false);
   }
 
@@ -79,7 +90,7 @@ function CourierPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <h1 className="text-2xl font-black">{t("courierArea")}</h1>
-        <p className="mt-3 text-muted-foreground">{t("becomeCourier")}</p>
+        <p className="mt-3 text-muted-foreground">{t("courierSignInFirst")}</p>
         <Link
           to="/auth"
           className="mt-6 inline-block rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
@@ -106,11 +117,19 @@ function CourierPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <h1 className="text-3xl font-black">{t("becomeCourier")}</h1>
+      <p className="mt-3 text-sm text-muted-foreground">{t("courierIntro")}</p>
 
       {app ? (
-        <p className="mt-6 rounded-xl border border-border bg-card p-5 text-sm">
-          {app.status === "rejected" ? t("courierRejected") : t("courierPending")}
-        </p>
+        <div className="mt-6 space-y-2 rounded-xl border border-border bg-card p-5 text-sm">
+          {sent && <p className="font-bold text-green-500">{t("courierSent")}</p>}
+          <p>
+            {app.status === "rejected"
+              ? t("courierRejected")
+              : app.status === "approved"
+                ? t("courierApproved")
+                : t("courierPending")}
+          </p>
+        </div>
       ) : (
         <form onSubmit={apply} className="mt-6 space-y-3">
           <input
@@ -123,6 +142,7 @@ function CourierPage() {
           <input
             className={input}
             placeholder={t("phone")}
+            type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
@@ -144,10 +164,12 @@ function CourierPage() {
 
       {err && <p className="mt-4 text-sm text-red-500">{err}</p>}
       <button
-        onClick={() => void refreshRoles()}
-        className="mt-6 text-sm text-muted-foreground underline"
+        type="button"
+        disabled={busy}
+        onClick={() => void refresh()}
+        className="mt-6 text-sm text-muted-foreground underline disabled:opacity-60"
       >
-        {t("loading")}
+        {busy ? t("loading") : t("refreshStatus")}
       </button>
     </div>
   );

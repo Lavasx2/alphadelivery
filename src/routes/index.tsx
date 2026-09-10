@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Flame, MapPin, Phone, ShoppingBag, Star, Bike, Clock } from "lucide-react";
+import { useMemo } from "react";
 import banner from "@/assets/crust-banner.jpg.asset.json";
 import { MENU_ITEMS, RESTAURANT, formatPrice } from "@/lib/menu";
+import { localizeItem } from "@/lib/menu-i18n";
 import { useCart } from "@/lib/cart";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,7 +30,13 @@ const featured = MENU_ITEMS.filter((i) => i.popular);
 
 function HomePage() {
   const { add } = useCart();
+  const { t, lang } = useI18n();
   const mapsKey = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"];
+
+  const featuredItems = useMemo(
+    () => featured.map((i) => localizeItem(i, lang)),
+    [lang]
+  );
 
   return (
     <div>
@@ -47,25 +56,22 @@ function HomePage() {
           <div className="flex items-center gap-2 text-sm">
             <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-3 py-1 font-semibold text-primary">
               <Star className="size-4 fill-primary" />
-              {RESTAURANT.rating} · {RESTAURANT.ratingCount} تقييمات على قوقل
+              {RESTAURANT.rating} · {RESTAURANT.ratingCount} {t("ratingOn")}
             </span>
           </div>
           <h1 className="max-w-2xl text-4xl font-black leading-tight md:text-6xl">
-            كراست — سناكس آند درينكس
+            {t("heroTitle")}
             <br />
-            <span className="text-primary">في قلب تبسة</span>
+            <span className="text-primary">{t("heroTitle2")}</span>
           </h1>
-          <p className="max-w-xl text-lg text-muted-foreground">
-            بيتزا، طاكوس، برغر، مقلوب وصوفلي — مكونات طازجة كل يوم. اطلب من
-            المنزل ونوصل لك ساخناً.
-          </p>
+          <p className="max-w-xl text-lg text-muted-foreground">{t("heroDesc")}</p>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/menu"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-primary-foreground transition-transform hover:scale-105"
             >
               <ShoppingBag className="size-5" />
-              اطلب الآن
+              {t("orderNow")}
             </Link>
             <a
               href={`tel:${RESTAURANT.phone}`}
@@ -81,7 +87,7 @@ function HomePage() {
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-bold transition-colors hover:bg-secondary"
             >
               <MapPin className="size-5 text-primary" />
-              موقعنا على الخريطة
+              {t("ourLocation")}
             </a>
           </div>
         </div>
@@ -90,21 +96,9 @@ function HomePage() {
       {/* Features */}
       <section className="mx-auto grid max-w-6xl gap-4 px-4 py-12 md:grid-cols-3">
         {[
-          {
-            icon: Flame,
-            title: "طعم كراست",
-            desc: "بيتزا وطاكوس وبرغر محضّرة عند الطلب بوصفات البيت الخاصة",
-          },
-          {
-            icon: Bike,
-            title: "توصيل للمنازل",
-            desc: "اطلب أونلاين من الموقع ونوصل طلبك ساخناً إلى باب دارك في تبسة",
-          },
-          {
-            icon: Clock,
-            title: "طازج دائماً",
-            desc: "مكونات طازجة كل يوم — جبنة، خضار ولحوم مختارة بعناية",
-          },
+          { icon: Flame, title: t("feature1Title"), desc: t("feature1Desc") },
+          { icon: Bike, title: t("feature2Title"), desc: t("feature2Desc") },
+          { icon: Clock, title: t("feature3Title"), desc: t("feature3Desc") },
         ].map(({ icon: Icon, title, desc }) => (
           <div key={title} className="rounded-2xl border border-border bg-card p-6">
             <span className="flex size-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
@@ -120,15 +114,15 @@ function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-3xl font-black">الأكثر طلباً</h2>
-            <p className="mt-1 text-muted-foreground">أطباقنا التي يعشقها زبائننا</p>
+            <h2 className="text-3xl font-black">{t("mostOrdered")}</h2>
+            <p className="mt-1 text-muted-foreground">{t("mostOrderedDesc")}</p>
           </div>
           <Link to="/menu" className="text-sm font-bold text-primary hover:underline">
-            المنيو الكامل ←
+            {t("fullMenu")} ←
           </Link>
         </div>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((item) => (
+          {featuredItems.map((item) => (
             <div
               key={item.id}
               className="rounded-2xl border border-border bg-card p-5"
@@ -146,7 +140,7 @@ function HomePage() {
                   onClick={() => add(item)}
                   className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
                 >
-                  أضف +
+                  {t("add_")}
                 </button>
               </div>
             </div>
@@ -156,15 +150,15 @@ function HomePage() {
 
       {/* Map */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-3xl font-black">تفضل بزيارتنا</h2>
+        <h2 className="text-3xl font-black">{t("visitUs")}</h2>
         <p className="mt-1 flex items-center gap-2 text-muted-foreground">
           <MapPin className="size-4 text-primary" />
           {RESTAURANT.plusCode}، {RESTAURANT.address}
         </p>
         <div className="mt-6 overflow-hidden rounded-2xl border border-border">
           <iframe
-            title="موقع كراست تبسة على الخريطة"
-            src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=place_id:${RESTAURANT.placeId}&language=ar&zoom=16`}
+            title={t("mapTitle")}
+            src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=place_id:${RESTAURANT.placeId}&language=${lang}&zoom=16`}
             className="h-96 w-full"
             loading="lazy"
             allowFullScreen

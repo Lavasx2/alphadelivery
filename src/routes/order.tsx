@@ -4,6 +4,7 @@ import { Bike, CheckCircle2, Minus, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/menu";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/order")({
   head: () => ({
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/order")({
 
 function OrderPage() {
   const { lines, total, setQty, remove, clear } = useCart();
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -38,7 +40,7 @@ function OrderPage() {
     e.preventDefault();
     setError(null);
     if (!name.trim() || !phone.trim() || !address.trim()) {
-      setError("يرجى ملء الاسم ورقم الهاتف والعنوان");
+      setError(t("fillRequired"));
       return;
     }
     setLoading(true);
@@ -57,7 +59,7 @@ function OrderPage() {
     });
     setLoading(false);
     if (dbError) {
-      setError("حدث خطأ أثناء إرسال الطلب، حاول مرة أخرى");
+      setError(t("orderError"));
       return;
     }
     clear();
@@ -68,16 +70,16 @@ function OrderPage() {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center">
         <CheckCircle2 className="size-16 text-green-500" />
-        <h1 className="mt-6 text-3xl font-black">تم استلام طلبك! 🎉</h1>
+        <h1 className="mt-6 text-3xl font-black">{t("orderDone")}</h1>
         <p className="mt-3 text-muted-foreground">
-          شكراً {name}! سنتصل بك على الرقم <bdi dir="ltr">{phone}</bdi> لتأكيد
-          الطلب، وسيصلك ساخناً إلى عنوانك إن شاء الله.
+          {t("thanks")} {name} — {t("orderDoneDesc")}{" "}
+          <bdi dir="ltr">{phone}</bdi>
         </p>
         <Link
           to="/menu"
           className="mt-8 rounded-lg bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary/90"
         >
-          العودة للمنيو
+          {t("backToMenu")}
         </Link>
       </div>
     );
@@ -87,27 +89,25 @@ function OrderPage() {
     <div className="mx-auto max-w-6xl px-4 py-12">
       <h1 className="flex items-center gap-3 text-4xl font-black">
         <Bike className="size-9 text-primary" />
-        اطلب للمنزل
+        {t("orderTitle")}
       </h1>
-      <p className="mt-2 text-muted-foreground">
-        راجع سلتك، أدخل معلوماتك، وسنوصل لك الطلب ساخناً — الدفع عند الاستلام
-      </p>
+      <p className="mt-2 text-muted-foreground">{t("orderIntro")}</p>
 
       {lines.length === 0 ? (
         <div className="mt-16 text-center">
-          <p className="text-lg text-muted-foreground">سلتك فارغة حالياً 🍕</p>
+          <p className="text-lg text-muted-foreground">{t("emptyCart")}</p>
           <Link
             to="/menu"
             className="mt-6 inline-block rounded-lg bg-primary px-6 py-3 font-bold text-primary-foreground hover:bg-primary/90"
           >
-            تصفح المنيو
+            {t("browseMenu")}
           </Link>
         </div>
       ) : (
         <div className="mt-10 grid gap-10 lg:grid-cols-2">
           {/* Cart */}
           <div>
-            <h2 className="text-xl font-bold">سلة الطلبات</h2>
+            <h2 className="text-xl font-bold">{t("cart")}</h2>
             <div className="mt-4 space-y-3">
               {lines.map((l) => (
                 <div
@@ -134,7 +134,7 @@ function OrderPage() {
                     <button
                       onClick={() => setQty(l.item.id, l.qty - 1)}
                       className="flex size-8 items-center justify-center rounded-md border border-border hover:bg-secondary"
-                      aria-label="إنقاص الكمية"
+                      aria-label={t("decrease")}
                     >
                       <Minus className="size-4" />
                     </button>
@@ -142,14 +142,14 @@ function OrderPage() {
                     <button
                       onClick={() => setQty(l.item.id, l.qty + 1)}
                       className="flex size-8 items-center justify-center rounded-md border border-border hover:bg-secondary"
-                      aria-label="زيادة الكمية"
+                      aria-label={t("increase")}
                     >
                       <Plus className="size-4" />
                     </button>
                     <button
                       onClick={() => remove(l.item.id)}
-                      className="mr-1 text-muted-foreground hover:text-destructive"
-                      aria-label="حذف من السلة"
+                      className="mx-1 text-muted-foreground hover:text-destructive"
+                      aria-label={t("removeItem")}
                     >
                       <Trash2 className="size-4" />
                     </button>
@@ -158,30 +158,30 @@ function OrderPage() {
               ))}
             </div>
             <div className="mt-4 flex items-center justify-between rounded-xl bg-primary/10 p-4 text-lg font-black">
-              <span>المجموع</span>
+              <span>{t("total")}</span>
               <span className="text-primary">{formatPrice(total)}</span>
             </div>
           </div>
 
           {/* Checkout form */}
           <div>
-            <h2 className="text-xl font-bold">معلومات التوصيل</h2>
+            <h2 className="text-xl font-bold">{t("deliveryInfo")}</h2>
             <form onSubmit={submitOrder} className="mt-4 space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  الاسم الكامل *
+                  {t("nameRequired")}
                 </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
                   className="w-full rounded-lg border border-input bg-card px-4 py-2.5 outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="مثال: محمد بن أحمد"
+                  placeholder={t("namePlaceholder")}
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  رقم الهاتف *
+                  {t("phoneRequired")}
                 </label>
                 <input
                   value={phone}
@@ -195,26 +195,26 @@ function OrderPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  عنوان التوصيل *
+                  {t("addressRequired")}
                 </label>
                 <input
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
                   className="w-full rounded-lg border border-input bg-card px-4 py-2.5 outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="الحي، الشارع، رقم المنزل..."
+                  placeholder={t("addressPlaceholder")}
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  ملاحظات (اختياري)
+                  {t("notesOptional")}
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
                   className="w-full rounded-lg border border-input bg-card px-4 py-2.5 outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="بدون بصل، حار زيادة..."
+                  placeholder={t("notesPlaceholder")}
                 />
               </div>
               {error && (
@@ -228,11 +228,11 @@ function OrderPage() {
                 className="w-full rounded-lg bg-primary py-3.5 text-lg font-black text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
                 {loading
-                  ? "جارٍ إرسال الطلب..."
-                  : `تأكيد الطلب — ${formatPrice(total)}`}
+                  ? t("sendingOrder")
+                  : `${t("confirmOrder")} — ${formatPrice(total)}`}
               </button>
               <p className="text-center text-xs text-muted-foreground">
-                الدفع نقداً عند الاستلام · سنتصل بك لتأكيد الطلب
+                {t("payOnDelivery")}
               </p>
             </form>
           </div>

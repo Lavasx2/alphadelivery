@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { claimOwnerRole } from "@/lib/owner.functions";
 
 export type Role = "owner" | "courier" | "customer";
 
@@ -21,16 +22,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
 
+  async function fetchRoles(userId: string) {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    return ((data ?? []).map((r) => r.role) as Role[]) ?? [];
+  }
+
   async function loadRoles(userId: string | undefined) {
     if (!userId) {
       setRoles([]);
       return;
     }
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
-    setRoles(((data ?? []).map((r) => r.role) as Role[]) ?? []);
+    let current = await fetchRoles(userId);
+    if (!current.includes("owner")) {
+      // Grants the owner role automatically to allowlisted owner emails.
+      try {
+        const res = await claimOwnerRole();
+        if (res?.granted) current = await fetchRoles(userId);
+      } catch {
+        /* ignore — user simply is not an allowlisted owner */
+      }
+    }
+    setRoles(current);
   }
 
   useEffect(() => {
@@ -45,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     return () => sub.subscription.unsubscribe();
   }, []);
+
 
   const value: AuthCtx = {
     session,

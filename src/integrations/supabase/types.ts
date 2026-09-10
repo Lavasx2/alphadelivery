@@ -125,6 +125,21 @@ export type Database = {
         }
         Relationships: []
       }
+      owner_emails: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
