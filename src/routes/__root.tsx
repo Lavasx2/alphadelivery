@@ -188,6 +188,7 @@ function Header() {
 }
 
 function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="border-t border-border bg-card">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-3">
@@ -197,20 +198,17 @@ function Footer() {
               <UtensilsCrossed className="size-5" />
             </span>
             <span className="text-lg font-extrabold">
-              كراست <span className="text-primary">تبسة</span>
+              Crust <span className="text-primary">Tebessa</span>
             </span>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            بيتزا، طاكوس وبرغر بمكونات طازجة. اطلب من المنزل ونوصل لك أينما كنت
-            في تبسة.
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground">{t("footerAbout")}</p>
         </div>
         <div>
-          <h3 className="font-bold">معلومات</h3>
+          <h3 className="font-bold">{t("info")}</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <MapPin className="size-4 text-primary" />
-              {RESTAURANT.plusCode}، {RESTAURANT.address}
+              {RESTAURANT.plusCode}, {RESTAURANT.address}
             </li>
             <li>
               <a
@@ -223,23 +221,23 @@ function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <Star className="size-4 text-primary" />
-              {RESTAURANT.rating} على قوقل مابس ({RESTAURANT.ratingCount}{" "}
-              تقييمات)
+              {RESTAURANT.rating} {t("onGoogleMaps")} ({RESTAURANT.ratingCount}{" "}
+              {t("reviews")})
             </li>
           </ul>
         </div>
 
         <div>
-          <h3 className="font-bold">روابط</h3>
+          <h3 className="font-bold">{t("links")}</h3>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <Link to="/menu" className="text-muted-foreground hover:text-primary">
-                المنيو الكامل
+                {t("fullMenu")}
               </Link>
             </li>
             <li>
               <Link to="/order" className="text-muted-foreground hover:text-primary">
-                اطلب للمنزل
+                {t("orderHome")}
               </Link>
             </li>
             <li>
@@ -249,14 +247,14 @@ function Footer() {
                 rel="noreferrer"
                 className="text-muted-foreground hover:text-primary"
               >
-                صفحتنا على قوقل مابس
+                {t("ourGooglePage")}
               </a>
             </li>
           </ul>
         </div>
       </div>
       <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} كراست تبسة — جميع الحقوق محفوظة
+        © {new Date().getFullYear()} Crust Tebessa — {t("rights")}
       </div>
     </footer>
   );

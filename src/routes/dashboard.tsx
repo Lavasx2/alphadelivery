@@ -63,7 +63,7 @@ function DashboardPage() {
       <div className="mx-auto max-w-md px-4 py-16 text-center">
         <h1 className="text-2xl font-black">{t("dashboard")}</h1>
         <p className="mt-3 text-muted-foreground">
-          {session ? "هذه الصفحة لصاحب المطعم فقط." : t("signIn")}
+          {session ? t("ownerOnly") : t("signIn")}
         </p>
         {!session && (
           <Link
@@ -452,9 +452,7 @@ function OwnersManager() {
     } catch (e) {
       const m = e instanceof Error ? e.message : "error";
       setErr(
-        m.includes("NOT_REGISTERED")
-          ? "هذا البريد ليس له حساب بعد — اطلب منه إنشاء حساب أولاً."
-          : m
+        m.includes("NOT_REGISTERED") ? t("ownerNotRegistered") : m
       );
     }
     setBusy(false);
