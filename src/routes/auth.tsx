@@ -62,7 +62,7 @@ function AuthPage() {
         });
         if (error) throw error;
         if (!data.session) {
-          setMsg("تم إنشاء الحساب — تحقق من بريدك لتفعيله ثم سجّل الدخول.");
+          setMsg(t("signupCheckEmail"));
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -72,7 +72,7 @@ function AuthPage() {
         if (error) throw error;
       }
     } catch (e2) {
-      setErr(e2 instanceof Error ? e2.message : "حدث خطأ");
+      setErr(e2 instanceof Error ? e2.message : t("genericError"));
     } finally {
       setBusy(false);
     }
