@@ -90,7 +90,6 @@ export type Database = {
           courier_id: string | null
           created_at: string
           customer_name: string
-          delivered_at: string | null
           id: string
           items: Json
           notes: string | null
@@ -104,7 +103,6 @@ export type Database = {
           courier_id?: string | null
           created_at?: string
           customer_name: string
-          delivered_at?: string | null
           id?: string
           items: Json
           notes?: string | null
@@ -118,7 +116,6 @@ export type Database = {
           courier_id?: string | null
           created_at?: string
           customer_name?: string
-          delivered_at?: string | null
           id?: string
           items?: Json
           notes?: string | null
