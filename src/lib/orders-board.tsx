@@ -19,7 +19,10 @@ type Order = {
   status: string;
   created_at: string;
   courier_id: string | null;
+  delivered_at: string | null;
 };
+
+const HIDE_DELIVERED_AFTER_MS = 4 * 60 * 1000;
 
 export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
   const { t } = useI18n();
@@ -27,6 +30,13 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, []);
+
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
