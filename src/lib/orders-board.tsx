@@ -70,14 +70,21 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
     await load();
   }
 
-  const visible =
-    mode === "courier"
-      ? orders.filter(
-          (o) =>
-            o.status === "new" ||
-            (o.courier_id && user && o.courier_id === user.id)
-        )
-      : orders;
+  const visible = orders.filter((o) => {
+    if (o.status === "cancelled" || o.status === "rejected") return false;
+    if (o.status === "delivered") {
+      const at = o.delivered_at ? new Date(o.delivered_at).getTime() : 0;
+      if (!at || now - at > HIDE_DELIVERED_AFTER_MS) return false;
+    }
+    if (mode === "courier") {
+      return (
+        o.status === "new" ||
+        Boolean(o.courier_id && user && o.courier_id === user.id)
+      );
+    }
+    return true;
+  });
+
 
   if (loading) return <p className="mt-6 text-muted-foreground">{t("loading")}</p>;
 
