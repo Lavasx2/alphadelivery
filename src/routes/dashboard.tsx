@@ -364,10 +364,12 @@ function CouriersManager() {
     const { data, error } = await supabase
       .from("courier_applications")
       .select("*")
+      .neq("status", "rejected")
       .order("created_at", { ascending: false });
     if (error) setErr(error.message);
     setApps((data ?? []) as CourierApp[]);
   }, []);
+
 
   useEffect(() => {
     void load();

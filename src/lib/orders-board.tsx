@@ -19,7 +19,10 @@ type Order = {
   status: string;
   created_at: string;
   courier_id: string | null;
+  delivered_at: string | null;
 };
+
+const HIDE_DELIVERED_AFTER_MS = 4 * 60 * 1000;
 
 export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
   const { t } = useI18n();
@@ -27,6 +30,13 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, []);
+
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -60,14 +70,21 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
     await load();
   }
 
-  const visible =
-    mode === "courier"
-      ? orders.filter(
-          (o) =>
-            o.status === "new" ||
-            (o.courier_id && user && o.courier_id === user.id)
-        )
-      : orders;
+  const visible = orders.filter((o) => {
+    if (o.status === "cancelled" || o.status === "rejected") return false;
+    if (o.status === "delivered") {
+      const at = o.delivered_at ? new Date(o.delivered_at).getTime() : 0;
+      if (!at || now - at > HIDE_DELIVERED_AFTER_MS) return false;
+    }
+    if (mode === "courier") {
+      return (
+        o.status === "new" ||
+        Boolean(o.courier_id && user && o.courier_id === user.id)
+      );
+    }
+    return true;
+  });
+
 
   if (loading) return <p className="mt-6 text-muted-foreground">{t("loading")}</p>;
 
