@@ -99,3 +99,11 @@
     font-family: "Cairo", "Tajawal", system-ui, sans-serif;
   }
 }
+
+#lovable-badge,
+#lovable-badge * {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
