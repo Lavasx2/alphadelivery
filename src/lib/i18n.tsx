@@ -285,6 +285,24 @@ const en: Dict = {
   sendingOrder: "Sending your order...",
   confirmOrder: "Confirm order",
   payOnDelivery: "Cash on delivery · we will call you to confirm",
+  // delivery location
+  locationTitle: "Delivery location",
+  locationHint:
+    "Share your location on Google Maps and the delivery fee is calculated automatically by distance from the restaurant (150 to 350 DZD).",
+  shareLocation: "Share my location on Google Maps",
+  locating: "Getting your location...",
+  locationDenied: "We couldn't get your location. Allow location access and try again.",
+  locationRequired: "Share your location first to calculate the delivery fee.",
+  locationReady: "Location captured ✅",
+  viewOnMaps: "View location on Google Maps",
+  distance: "Distance",
+  km: "km",
+  deliveryFee: "Delivery fee",
+  subtotal: "Order subtotal",
+  grandTotal: "Total with delivery",
+  outOfRange:
+    "Your location is outside our delivery area — we deliver up to El Hammamet, Tébessa (16 km from the restaurant).",
+
   orderDone: "Order received! 🎉",
   orderDoneDesc: "We will call you to confirm and deliver it hot to your address.",
   thanks: "Thank you",
