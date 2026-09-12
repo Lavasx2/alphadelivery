@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Bike, CheckCircle2, Minus, Plus, Trash2 } from "lucide-react";
+import { Bike, CheckCircle2, MapPin, Minus, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/menu";
 import { useI18n } from "@/lib/i18n";
+import { quoteDelivery } from "@/lib/delivery.functions";
 
 export const Route = createFileRoute("/order")({
   head: () => ({
@@ -35,12 +36,59 @@ function OrderPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [quote, setQuote] = useState<{
+    distanceKm: number;
+    fee: number;
+    outOfRange: boolean;
+    mapsUrl: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  const grandTotal = total + (quote && !quote.outOfRange ? quote.fee : 0);
+
+  function shareLocation() {
+    setError(null);
+    if (!navigator.geolocation) {
+      setError(t("locationDenied"));
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const res = await quoteDelivery({ data: { lat, lng } });
+          setQuote({ ...res, lat, lng });
+          if (res.outOfRange) setError(t("outOfRange"));
+        } catch {
+          setError(t("locationDenied"));
+        }
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setError(t("locationDenied"));
+      },
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  }
 
   async function submitOrder(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (!name.trim() || !phone.trim() || !address.trim()) {
       setError(t("fillRequired"));
+      return;
+    }
+    if (!quote) {
+      setError(t("locationRequired"));
+      return;
+    }
+    if (quote.outOfRange) {
+      setError(t("outOfRange"));
       return;
     }
     setLoading(true);
@@ -55,7 +103,12 @@ function OrderPage() {
         price: l.item.price,
         qty: l.qty,
       })),
-      total,
+      total: grandTotal,
+      delivery_fee: quote.fee,
+      distance_km: quote.distanceKm,
+      lat: quote.lat,
+      lng: quote.lng,
+      maps_url: quote.mapsUrl,
     });
     setLoading(false);
     if (dbError) {
@@ -217,6 +270,58 @@ function OrderPage() {
                   placeholder={t("notesPlaceholder")}
                 />
               </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <h3 className="flex items-center gap-2 font-bold">
+                  <MapPin className="size-4 text-primary" />
+                  {t("locationTitle")}
+                </h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t("locationHint")}
+                </p>
+                <button
+                  type="button"
+                  onClick={shareLocation}
+                  disabled={locating}
+                  className="mt-3 w-full rounded-lg border border-primary/50 bg-primary/10 py-2.5 text-sm font-bold text-primary disabled:opacity-60"
+                >
+                  {locating ? t("locating") : t("shareLocation")}
+                </button>
+                {quote && (
+                  <div className="mt-3 space-y-1 text-sm">
+                    <p className="font-bold text-green-500">{t("locationReady")}</p>
+                    <p className="text-muted-foreground">
+                      {t("distance")}: <bdi dir="ltr">{quote.distanceKm}</bdi>{" "}
+                      {t("km")}
+                    </p>
+                    <a
+                      href={quote.mapsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block text-primary underline"
+                    >
+                      {t("viewOnMaps")}
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {quote && !quote.outOfRange && (
+                <div className="space-y-1 rounded-xl bg-primary/10 p-4 text-sm">
+                  <div className="flex justify-between">
+                    <span>{t("subtotal")}</span>
+                    <span>{formatPrice(total)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("deliveryFee")}</span>
+                    <span>{formatPrice(quote.fee)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-black text-primary">
+                    <span>{t("grandTotal")}</span>
+                    <span>{formatPrice(grandTotal)}</span>
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <p className="rounded-lg bg-destructive/15 p-3 text-sm font-medium text-destructive">
                   {error}
@@ -229,7 +334,7 @@ function OrderPage() {
               >
                 {loading
                   ? t("sendingOrder")
-                  : `${t("confirmOrder")} — ${formatPrice(total)}`}
+                  : `${t("confirmOrder")} — ${formatPrice(grandTotal)}`}
               </button>
               <p className="text-center text-xs text-muted-foreground">
                 {t("payOnDelivery")}
