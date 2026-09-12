@@ -91,8 +91,13 @@ export type Database = {
           created_at: string
           customer_name: string
           delivered_at: string | null
+          delivery_fee: number
+          distance_km: number | null
           id: string
           items: Json
+          lat: number | null
+          lng: number | null
+          maps_url: string | null
           notes: string | null
           phone: string
           status: string
@@ -105,8 +110,13 @@ export type Database = {
           created_at?: string
           customer_name: string
           delivered_at?: string | null
+          delivery_fee?: number
+          distance_km?: number | null
           id?: string
           items: Json
+          lat?: number | null
+          lng?: number | null
+          maps_url?: string | null
           notes?: string | null
           phone: string
           status?: string
@@ -119,8 +129,13 @@ export type Database = {
           created_at?: string
           customer_name?: string
           delivered_at?: string | null
+          delivery_fee?: number
+          distance_km?: number | null
           id?: string
           items?: Json
+          lat?: number | null
+          lng?: number | null
+          maps_url?: string | null
           notes?: string | null
           phone?: string
           status?: string
