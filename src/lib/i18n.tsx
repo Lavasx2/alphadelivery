@@ -436,6 +436,25 @@ const fr: Dict = {
   sendingOrder: "Envoi de la commande...",
   confirmOrder: "Confirmer la commande",
   payOnDelivery: "Paiement en espèces à la livraison · nous vous appelons pour confirmer",
+  // delivery location
+  locationTitle: "Lieu de livraison",
+  locationHint:
+    "Partagez votre position sur Google Maps : le prix de livraison est calculé automatiquement selon la distance depuis le restaurant (de 150 à 350 DA).",
+  shareLocation: "Partager ma position sur Google Maps",
+  locating: "Localisation en cours...",
+  locationDenied:
+    "Impossible d'obtenir votre position. Autorisez la localisation et réessayez.",
+  locationRequired: "Partagez d'abord votre position pour calculer la livraison.",
+  locationReady: "Position enregistrée ✅",
+  viewOnMaps: "Voir la position sur Google Maps",
+  distance: "Distance",
+  km: "km",
+  deliveryFee: "Frais de livraison",
+  subtotal: "Sous-total",
+  grandTotal: "Total avec livraison",
+  outOfRange:
+    "Votre position est hors de notre zone — nous livrons jusqu'à la commune d'El Hammamet, Tébessa (16 km du restaurant).",
+
   orderDone: "Commande reçue ! 🎉",
   orderDoneDesc:
     "Nous vous appelons pour confirmer et livrons chaud à votre adresse.",
