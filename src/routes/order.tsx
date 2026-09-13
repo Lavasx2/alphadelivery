@@ -102,7 +102,7 @@ function OrderPage() {
     const { error: dbError } = await supabase.from("orders").insert({
       customer_name: name.trim(),
       phone: phone.trim(),
-      address: address.trim(),
+      address: address.trim() || `${quote.lat.toFixed(6)}, ${quote.lng.toFixed(6)}`,
       notes: notes.trim() || null,
       items: lines.map((l) => ({
         id: l.item.id,
@@ -255,15 +255,11 @@ function OrderPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  {t("addressRequired")}
+                  {t("detectedAddress")}
                 </label>
-                <input
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-input bg-card px-4 py-2.5 outline-none focus:ring-2 focus:ring-ring"
-                  placeholder={t("addressPlaceholder")}
-                />
+                <p className="rounded-lg border border-dashed border-border bg-secondary/40 px-4 py-2.5 text-sm">
+                  {address || t("addressAuto")}
+                </p>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">
