@@ -1,11 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { ClientOnly, createFileRoute, Link } from "@tanstack/react-router";
+import { lazy, Suspense, useState } from "react";
 import { Bike, CheckCircle2, MapPin, Minus, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
-import { formatPrice } from "@/lib/menu";
+import { RESTAURANT, formatPrice } from "@/lib/menu";
 import { useI18n } from "@/lib/i18n";
 import { quoteDelivery } from "@/lib/delivery.functions";
+
+const MapPicker = lazy(() => import("@/components/MapPicker"));
 
 export const Route = createFileRoute("/order")({
   head: () => ({
