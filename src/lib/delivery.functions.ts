@@ -84,12 +84,39 @@ export const quoteDelivery = createServerFn({ method: "POST" })
       }
     }
 
+    // Reverse geocode so the customer never has to type the neighbourhood
+    let address = "";
+    if (lovableKey && mapsKey) {
+      try {
+        const geo = await fetch(
+          `${GATEWAY_URL}/maps/api/geocode/json?latlng=${data.lat},${data.lng}&language=ar`,
+          {
+            headers: {
+              Authorization: `Bearer ${lovableKey}`,
+              "X-Connection-Api-Key": mapsKey,
+            },
+          }
+        );
+        if (geo.ok) {
+          const json = (await geo.json()) as {
+            results?: { formatted_address?: string }[];
+          };
+          address = json.results?.[0]?.formatted_address ?? "";
+        } else {
+          console.error(`Geocode failed [${geo.status}]: ${await geo.text()}`);
+        }
+      } catch (e) {
+        console.error("Geocode error", e);
+      }
+    }
+
     const distanceKm = Math.round(km * 10) / 10;
     return {
       distanceKm,
       fee: feeForDistance(distanceKm),
       outOfRange: distanceKm > MAX_DELIVERY_KM,
       mapsUrl: `https://www.google.com/maps/search/?api=1&query=${data.lat},${data.lng}`,
+      address,
       source,
     };
   });
