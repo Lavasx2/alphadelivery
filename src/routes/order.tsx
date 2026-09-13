@@ -33,7 +33,6 @@ function OrderPage() {
   const { t } = useI18n();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -44,11 +43,26 @@ function OrderPage() {
     fee: number;
     outOfRange: boolean;
     mapsUrl: string;
+    address: string;
     lat: number;
     lng: number;
   } | null>(null);
 
   const grandTotal = total + (quote && !quote.outOfRange ? quote.fee : 0);
+  const address = quote?.address || "";
+
+  async function quoteFor(lat: number, lng: number) {
+    setError(null);
+    setLocating(true);
+    try {
+      const res = await quoteDelivery({ data: { lat, lng } });
+      setQuote({ ...res, lat, lng });
+      if (res.outOfRange) setError(t("outOfRange"));
+    } catch {
+      setError(t("locationDenied"));
+    }
+    setLocating(false);
+  }
 
   function shareLocation() {
     setError(null);
@@ -58,17 +72,8 @@ function OrderPage() {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const res = await quoteDelivery({ data: { lat, lng } });
-          setQuote({ ...res, lat, lng });
-          if (res.outOfRange) setError(t("outOfRange"));
-        } catch {
-          setError(t("locationDenied"));
-        }
-        setLocating(false);
+      (pos) => {
+        void quoteFor(pos.coords.latitude, pos.coords.longitude);
       },
       () => {
         setLocating(false);
@@ -81,7 +86,7 @@ function OrderPage() {
   async function submitOrder(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name.trim() || !phone.trim() || !address.trim()) {
+    if (!name.trim() || !phone.trim()) {
       setError(t("fillRequired"));
       return;
     }
