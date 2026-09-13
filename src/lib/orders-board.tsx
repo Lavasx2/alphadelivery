@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
@@ -20,9 +21,44 @@ type Order = {
   created_at: string;
   courier_id: string | null;
   delivered_at: string | null;
+  lat: number | null;
+  lng: number | null;
+  maps_url: string | null;
+  distance_km: number | null;
+  delivery_fee: number | null;
 };
 
 const HIDE_DELIVERED_AFTER_MS = 4 * 60 * 1000;
+const REFRESH_MS = 12000;
+
+function beep() {
+  try {
+    const Ctx =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const play = (at: number, freq: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + at);
+      gain.gain.exponentialRampToValueAtTime(0.35, ctx.currentTime + at + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + at + 0.3);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + at);
+      osc.stop(ctx.currentTime + at + 0.35);
+    };
+    play(0, 880);
+    play(0.35, 1175);
+    play(0.7, 880);
+    setTimeout(() => void ctx.close(), 1500);
+  } catch {
+    /* audio unavailable */
+  }
+}
 
 export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
   const { t } = useI18n();
@@ -31,12 +67,16 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [sound, setSound] = useState(true);
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
+  const seenRef = useRef<Set<string> | null>(null);
+  const mapsKey = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"];
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 15000);
     return () => clearInterval(id);
   }, []);
-
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -45,7 +85,16 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) setErr(error.message);
-    setOrders((data ?? []) as Order[]);
+    const rows = (data ?? []) as Order[];
+    const newIds = rows.filter((o) => o.status === "new").map((o) => o.id);
+    if (seenRef.current === null) {
+      seenRef.current = new Set(newIds);
+    } else {
+      const fresh = newIds.filter((id) => !seenRef.current!.has(id));
+      seenRef.current = new Set(newIds);
+      if (fresh.length > 0 && soundRef.current) beep();
+    }
+    setOrders(rows);
     setLoading(false);
   }, []);
 
@@ -59,7 +108,9 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
         () => void load()
       )
       .subscribe();
+    const poll = setInterval(() => void load(), REFRESH_MS);
     return () => {
+      clearInterval(poll);
       void supabase.removeChannel(channel);
     };
   }, [load]);
