@@ -141,6 +141,20 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
 
   return (
     <div className="mt-6 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs text-muted-foreground">{t("autoRefreshOn")}</span>
+        <button
+          type="button"
+          onClick={() => {
+            const next = !sound;
+            setSound(next);
+            if (next) beep();
+          }}
+          className="rounded-full border border-border px-3 py-1 text-xs font-bold"
+        >
+          {sound ? t("soundOn") : t("soundOff")}
+        </button>
+      </div>
       {err && <p className="text-sm text-red-500">{err}</p>}
       {visible.length === 0 && (
         <p className="text-muted-foreground">{t("noOrders")}</p>
@@ -167,6 +181,45 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
                 {t(o.status)}
               </span>
             </div>
+
+            {(o.lat !== null && o.lng !== null) || o.maps_url ? (
+              <div className="mt-3 rounded-xl border border-border bg-secondary/30 p-3">
+                <p className="flex items-center gap-2 text-sm font-bold">
+                  <MapPin className="size-4 text-primary" />
+                  {t("orderLocation")}
+                  {o.distance_km !== null && (
+                    <span className="font-normal text-muted-foreground">
+                      · <bdi dir="ltr">{o.distance_km}</bdi> {t("km")}
+                    </span>
+                  )}
+                </p>
+                {mapsKey && o.lat !== null && o.lng !== null && (
+                  <iframe
+                    title={`${t("orderLocation")} ${o.id}`}
+                    loading="lazy"
+                    className="mt-2 h-48 w-full rounded-lg border-0"
+                    src={`https://www.google.com/maps/embed/v1/view?key=${mapsKey}&center=${o.lat},${o.lng}&zoom=16`}
+                  />
+                )}
+                <a
+                  href={
+                    o.maps_url ??
+                    `https://www.google.com/maps/search/?api=1&query=${o.lat},${o.lng}`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block text-sm font-bold text-primary underline"
+                >
+                  {t("openInMaps")}
+                </a>
+                {o.delivery_fee !== null && Number(o.delivery_fee) > 0 && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t("deliveryFee")}: {formatPrice(Number(o.delivery_fee))}
+                  </p>
+                )}
+              </div>
+            ) : null}
+
 
             <ul className="mt-3 space-y-1 text-sm">
               {lines.map((l, i) => (
