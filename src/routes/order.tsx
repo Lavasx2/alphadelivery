@@ -1,11 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { ClientOnly, createFileRoute, Link } from "@tanstack/react-router";
+import { lazy, Suspense, useState } from "react";
 import { Bike, CheckCircle2, MapPin, Minus, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
-import { formatPrice } from "@/lib/menu";
+import { RESTAURANT, formatPrice } from "@/lib/menu";
 import { useI18n } from "@/lib/i18n";
 import { quoteDelivery } from "@/lib/delivery.functions";
+
+const MapPicker = lazy(() => import("@/components/MapPicker"));
 
 export const Route = createFileRoute("/order")({
   head: () => ({
@@ -31,7 +33,6 @@ function OrderPage() {
   const { t } = useI18n();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -42,11 +43,26 @@ function OrderPage() {
     fee: number;
     outOfRange: boolean;
     mapsUrl: string;
+    address: string;
     lat: number;
     lng: number;
   } | null>(null);
 
   const grandTotal = total + (quote && !quote.outOfRange ? quote.fee : 0);
+  const address = quote?.address || "";
+
+  async function quoteFor(lat: number, lng: number) {
+    setError(null);
+    setLocating(true);
+    try {
+      const res = await quoteDelivery({ data: { lat, lng } });
+      setQuote({ ...res, lat, lng });
+      if (res.outOfRange) setError(t("outOfRange"));
+    } catch {
+      setError(t("locationDenied"));
+    }
+    setLocating(false);
+  }
 
   function shareLocation() {
     setError(null);
@@ -56,17 +72,8 @@ function OrderPage() {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const res = await quoteDelivery({ data: { lat, lng } });
-          setQuote({ ...res, lat, lng });
-          if (res.outOfRange) setError(t("outOfRange"));
-        } catch {
-          setError(t("locationDenied"));
-        }
-        setLocating(false);
+      (pos) => {
+        void quoteFor(pos.coords.latitude, pos.coords.longitude);
       },
       () => {
         setLocating(false);
@@ -79,7 +86,7 @@ function OrderPage() {
   async function submitOrder(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name.trim() || !phone.trim() || !address.trim()) {
+    if (!name.trim() || !phone.trim()) {
       setError(t("fillRequired"));
       return;
     }
@@ -95,7 +102,7 @@ function OrderPage() {
     const { error: dbError } = await supabase.from("orders").insert({
       customer_name: name.trim(),
       phone: phone.trim(),
-      address: address.trim(),
+      address: address.trim() || `${quote.lat.toFixed(6)}, ${quote.lng.toFixed(6)}`,
       notes: notes.trim() || null,
       items: lines.map((l) => ({
         id: l.item.id,
@@ -248,15 +255,11 @@ function OrderPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  {t("addressRequired")}
+                  {t("detectedAddress")}
                 </label>
-                <input
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-input bg-card px-4 py-2.5 outline-none focus:ring-2 focus:ring-ring"
-                  placeholder={t("addressPlaceholder")}
-                />
+                <p className="rounded-lg border border-dashed border-border bg-secondary/40 px-4 py-2.5 text-sm">
+                  {address || t("addressAuto")}
+                </p>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">
@@ -286,6 +289,21 @@ function OrderPage() {
                 >
                   {locating ? t("locating") : t("shareLocation")}
                 </button>
+
+                <p className="mt-4 text-sm font-bold">{t("pickOnMap")}</p>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {t("mapPickHint")}
+                </p>
+                <ClientOnly fallback={<div className="h-64 rounded-lg bg-secondary" />}>
+                  <Suspense fallback={<div className="h-64 rounded-lg bg-secondary" />}>
+                    <MapPicker
+                      center={{ lat: RESTAURANT.lat, lng: RESTAURANT.lng }}
+                      value={quote ? { lat: quote.lat, lng: quote.lng } : null}
+                      onPick={(p) => void quoteFor(p.lat, p.lng)}
+                    />
+                  </Suspense>
+                </ClientOnly>
+
                 {quote && (
                   <div className="mt-3 space-y-1 text-sm">
                     <p className="font-bold text-green-500">{t("locationReady")}</p>
