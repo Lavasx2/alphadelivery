@@ -289,6 +289,21 @@ function OrderPage() {
                 >
                   {locating ? t("locating") : t("shareLocation")}
                 </button>
+
+                <p className="mt-4 text-sm font-bold">{t("pickOnMap")}</p>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {t("mapPickHint")}
+                </p>
+                <ClientOnly fallback={<div className="h-64 rounded-lg bg-secondary" />}>
+                  <Suspense fallback={<div className="h-64 rounded-lg bg-secondary" />}>
+                    <MapPicker
+                      center={{ lat: RESTAURANT.lat, lng: RESTAURANT.lng }}
+                      value={quote ? { lat: quote.lat, lng: quote.lng } : null}
+                      onPick={(p) => void quoteFor(p.lat, p.lng)}
+                    />
+                  </Suspense>
+                </ClientOnly>
+
                 {quote && (
                   <div className="mt-3 space-y-1 text-sm">
                     <p className="font-bold text-green-500">{t("locationReady")}</p>
