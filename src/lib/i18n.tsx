@@ -153,6 +153,16 @@ const ar: Dict = {
   grandTotal: "الإجمالي مع التوصيل",
   outOfRange:
     "موقعك خارج نطاق التوصيل — نوصل حتى بلدية الحمامات تبسة (16 كم من المطعم).",
+  pickOnMap: "اختر الموقع يدوياً على الخريطة",
+  mapPickHint: "اضغط على الخريطة أو اسحب العلامة لتحديد مكان التوصيل بدقة.",
+  detectedAddress: "العنوان المكتشف",
+  addressAuto: "يُحدَّد العنوان تلقائياً من الخريطة — لا حاجة لكتابة الحي.",
+  orderLocation: "موقع الطلبية",
+  openInMaps: "فتح الموقع في قوقل مابس",
+  soundOn: "الصوت مفعّل 🔔",
+  soundOff: "الصوت متوقف 🔕",
+  newOrderAlert: "طلبية جديدة!",
+  autoRefreshOn: "تحديث تلقائي مفعّل",
 
   orderDone: "تم استلام طلبك! 🎉",
   orderDoneDesc: "سنتصل بك لتأكيد الطلب وسيصلك ساخناً إلى عنوانك.",
@@ -302,6 +312,16 @@ const en: Dict = {
   grandTotal: "Total with delivery",
   outOfRange:
     "Your location is outside our delivery area — we deliver up to El Hammamet, Tébessa (16 km from the restaurant).",
+  pickOnMap: "Pick the location manually on the map",
+  mapPickHint: "Tap the map or drag the pin to set the exact delivery spot.",
+  detectedAddress: "Detected address",
+  addressAuto: "The address is detected from the map — no need to type your neighbourhood.",
+  orderLocation: "Order location",
+  openInMaps: "Open location in Google Maps",
+  soundOn: "Sound on 🔔",
+  soundOff: "Sound off 🔕",
+  newOrderAlert: "New order!",
+  autoRefreshOn: "Auto refresh on",
 
   orderDone: "Order received! 🎉",
   orderDoneDesc: "We will call you to confirm and deliver it hot to your address.",
@@ -454,6 +474,16 @@ const fr: Dict = {
   grandTotal: "Total avec livraison",
   outOfRange:
     "Votre position est hors de notre zone — nous livrons jusqu'à la commune d'El Hammamet, Tébessa (16 km du restaurant).",
+  pickOnMap: "Choisir la position manuellement sur la carte",
+  mapPickHint: "Touchez la carte ou déplacez le repère pour préciser le lieu.",
+  detectedAddress: "Adresse détectée",
+  addressAuto: "L'adresse est détectée depuis la carte — pas besoin d'écrire le quartier.",
+  orderLocation: "Position de la commande",
+  openInMaps: "Ouvrir la position dans Google Maps",
+  soundOn: "Son activé 🔔",
+  soundOff: "Son désactivé 🔕",
+  newOrderAlert: "Nouvelle commande !",
+  autoRefreshOn: "Actualisation automatique activée",
 
   orderDone: "Commande reçue ! 🎉",
   orderDoneDesc:
