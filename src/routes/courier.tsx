@@ -39,18 +39,29 @@ function CourierPage() {
   const { t } = useI18n();
   const { session, user, isCourier, isOwner, loading, refreshRoles } = useAuth();
   const [app, setApp] = useState<App | null>(null);
+  const [settings, setSettings] = useState<Settings>({ fee: 0, card: "", holder: "" });
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
+  const [payRef, setPayRef] = useState("");
+  const [payHolder, setPayHolder] = useState("");
+  const [payLast4, setPayLast4] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    const { data: st } = await supabase.from("app_settings").select("key,value");
+    const map = new Map((st ?? []).map((r) => [r.key, r.value ?? ""]));
+    setSettings({
+      fee: Number(map.get("courier_fee") ?? 0) || 0,
+      card: map.get("courier_card_number") ?? "",
+      holder: map.get("courier_card_holder") ?? "",
+    });
     if (!user) return;
     const { data, error } = await supabase
       .from("courier_applications")
-      .select("id,status,full_name")
+      .select("id,status,full_name,payment_status,fee_amount")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1);
@@ -61,6 +72,23 @@ function CourierPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function payNow(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    try {
+      await submitCourierPayment({
+        data: { reference: payRef, holder: payHolder, last4: payLast4 },
+      });
+      await load();
+    } catch (e2) {
+      const m = e2 instanceof Error ? e2.message : "error";
+      setErr(m.includes("INVALID_PAYMENT") ? t("invalidPayment") : m);
+    }
+    setBusy(false);
+  }
+
 
   async function apply(e: React.FormEvent) {
     e.preventDefault();
