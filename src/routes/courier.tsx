@@ -257,7 +257,7 @@ function CourierPage() {
           />
           <button
             disabled={busy}
-            className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-60"
+            className="w-full rounded-xl bg-primary px-5 py-4 text-base font-black text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] disabled:opacity-60"
           >
             {busy ? t("loading") : t("send")}
           </button>
