@@ -28,7 +28,12 @@ type App = {
   id: string;
   status: string;
   full_name: string;
+  payment_status: string;
+  fee_amount: number | null;
 };
+
+type Settings = { fee: number; card: string; holder: string };
+
 
 function CourierPage() {
   const { t } = useI18n();
