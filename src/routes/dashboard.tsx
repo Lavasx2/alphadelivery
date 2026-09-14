@@ -44,6 +44,11 @@ type CourierApp = {
   phone: string;
   vehicle: string | null;
   status: string;
+  payment_status: string;
+  payment_reference: string | null;
+  payment_holder: string | null;
+  payment_last4: string | null;
+  fee_amount: number | null;
 };
 
 const inputCls =
@@ -52,9 +57,10 @@ const inputCls =
 function DashboardPage() {
   const { t } = useI18n();
   const { session, isOwner, loading } = useAuth();
-  const [tab, setTab] = useState<"orders" | "menu" | "couriers" | "owners">(
-    "orders"
-  );
+  const [tab, setTab] = useState<
+    "orders" | "menu" | "couriers" | "owners" | "settings"
+  >("orders");
+
 
   if (loading) return <p className="mx-auto max-w-3xl px-4 py-16">{t("loading")}</p>;
 
