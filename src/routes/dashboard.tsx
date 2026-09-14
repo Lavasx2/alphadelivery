@@ -88,7 +88,9 @@ function DashboardPage() {
     { id: "menu", label: t("manageMenu") },
     { id: "couriers", label: t("couriers") },
     { id: "owners", label: t("owners") },
+    { id: "settings", label: t("settings") },
   ] as const;
+
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -114,6 +116,8 @@ function DashboardPage() {
       {tab === "menu" && <MenuManager />}
       {tab === "couriers" && <CouriersManager />}
       {tab === "owners" && <OwnersManager />}
+      {tab === "settings" && <SettingsManager />}
+
     </div>
   );
 }
