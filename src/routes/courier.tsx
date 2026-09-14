@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { OrdersBoard } from "@/lib/orders-board";
+import { formatPrice } from "@/lib/menu";
+import { submitCourierPayment } from "@/lib/courier-payment.functions";
+
 
 export const Route = createFileRoute("/courier")({
   head: () => ({
@@ -28,24 +31,40 @@ type App = {
   id: string;
   status: string;
   full_name: string;
+  payment_status: string;
+  fee_amount: number | null;
 };
+
+type Settings = { fee: number; card: string; holder: string };
+
 
 function CourierPage() {
   const { t } = useI18n();
   const { session, user, isCourier, isOwner, loading, refreshRoles } = useAuth();
   const [app, setApp] = useState<App | null>(null);
+  const [settings, setSettings] = useState<Settings>({ fee: 0, card: "", holder: "" });
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
+  const [payRef, setPayRef] = useState("");
+  const [payHolder, setPayHolder] = useState("");
+  const [payLast4, setPayLast4] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    const { data: st } = await supabase.from("app_settings").select("key,value");
+    const map = new Map((st ?? []).map((r) => [r.key, r.value ?? ""]));
+    setSettings({
+      fee: Number(map.get("courier_fee") ?? 0) || 0,
+      card: map.get("courier_card_number") ?? "",
+      holder: map.get("courier_card_holder") ?? "",
+    });
     if (!user) return;
     const { data, error } = await supabase
       .from("courier_applications")
-      .select("id,status,full_name")
+      .select("id,status,full_name,payment_status,fee_amount")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1);
@@ -56,6 +75,23 @@ function CourierPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function payNow(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    try {
+      await submitCourierPayment({
+        data: { reference: payRef, holder: payHolder, last4: payLast4 },
+      });
+      await load();
+    } catch (e2) {
+      const m = e2 instanceof Error ? e2.message : "error";
+      setErr(m.includes("INVALID_PAYMENT") ? t("invalidPayment") : m);
+    }
+    setBusy(false);
+  }
+
 
   async function apply(e: React.FormEvent) {
     e.preventDefault();
@@ -120,17 +156,83 @@ function CourierPage() {
       <p className="mt-3 text-sm text-muted-foreground">{t("courierIntro")}</p>
 
       {app ? (
-        <div className="mt-6 space-y-2 rounded-xl border border-border bg-card p-5 text-sm">
-          {sent && <p className="font-bold text-green-500">{t("courierSent")}</p>}
-          <p>
-            {app.status === "rejected"
-              ? t("courierRejected")
-              : app.status === "approved"
-                ? t("courierApproved")
-                : t("courierPending")}
-          </p>
+        <div className="mt-6 space-y-4">
+          <div className="space-y-2 rounded-xl border border-border bg-card p-5 text-sm">
+            {sent && <p className="font-bold text-green-500">{t("courierSent")}</p>}
+            <p>
+              {app.status === "rejected"
+                ? t("courierRejected")
+                : app.status === "approved"
+                  ? t("courierApproved")
+                  : t("courierPending")}
+            </p>
+          </div>
+
+          {app.status !== "rejected" && app.status !== "approved" && (
+            <div className="space-y-3 rounded-2xl border border-primary/40 bg-primary/5 p-5 text-sm">
+              <h2 className="text-lg font-black">{t("courierFeeTitle")}</h2>
+              <p className="text-muted-foreground">{t("courierFeeDesc")}</p>
+              <p className="text-base font-black text-primary">
+                {t("courierFee")}: {formatPrice(app.fee_amount ?? settings.fee)}
+              </p>
+
+              {app.payment_status === "paid" ? (
+                <p className="font-bold text-green-500">{t("paymentVerified")}</p>
+              ) : app.payment_status === "submitted" ? (
+                <p className="font-bold text-amber-500">{t("paymentSubmitted")}</p>
+              ) : settings.card ? (
+                <form onSubmit={payNow} className="space-y-3">
+                  <div className="rounded-xl border border-border bg-card p-4">
+                    <p className="text-xs text-muted-foreground">{t("payToCard")}</p>
+                    <p className="mt-1 text-lg font-black" dir="ltr">
+                      {settings.card}
+                    </p>
+                    {settings.holder && (
+                      <p className="text-xs text-muted-foreground">
+                        {t("cardHolder")}: {settings.holder}
+                      </p>
+                    )}
+                  </div>
+                  <input
+                    className={input}
+                    placeholder={t("cardHolder")}
+                    value={payHolder}
+                    onChange={(e) => setPayHolder(e.target.value)}
+                    required
+                  />
+                  <input
+                    className={input}
+                    placeholder={t("cardLast4")}
+                    inputMode="numeric"
+                    maxLength={4}
+                    dir="ltr"
+                    value={payLast4}
+                    onChange={(e) => setPayLast4(e.target.value)}
+                    required
+                  />
+                  <input
+                    className={input}
+                    placeholder={t("paymentRef")}
+                    dir="ltr"
+                    value={payRef}
+                    onChange={(e) => setPayRef(e.target.value)}
+                    required
+                  />
+                  <button
+                    disabled={busy}
+                    className="w-full rounded-xl bg-primary px-5 py-4 text-base font-black text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] disabled:opacity-60"
+                  >
+                    {busy ? t("loading") : t("submitPayment")}
+                  </button>
+                </form>
+              ) : (
+                <p className="text-amber-500">{t("feeNotSet")}</p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
+
         <form onSubmit={apply} className="mt-6 space-y-3">
           <input
             className={input}
@@ -155,7 +257,7 @@ function CourierPage() {
           />
           <button
             disabled={busy}
-            className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-60"
+            className="w-full rounded-xl bg-primary px-5 py-4 text-base font-black text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] disabled:opacity-60"
           >
             {busy ? t("loading") : t("send")}
           </button>
