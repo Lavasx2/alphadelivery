@@ -410,41 +410,169 @@ function CouriersManager() {
     await load();
   }
 
+  async function verifyPayment(app: CourierApp) {
+    setErr(null);
+    const { error } = await supabase
+      .from("courier_applications")
+      .update({ payment_status: "paid" })
+      .eq("id", app.id);
+    if (error) setErr(error.message);
+    await load();
+  }
+
   return (
     <div className="mt-6 space-y-3">
       {err && <p className="text-sm text-red-500">{err}</p>}
       {apps.length === 0 && <p className="text-muted-foreground">—</p>}
-      {apps.map((a) => (
-        <div
-          key={a.id}
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
-        >
-          <div>
-            <p className="font-bold">{a.full_name}</p>
-            <p className="text-sm text-muted-foreground">
-              {a.phone} {a.vehicle ? `— ${a.vehicle}` : ""}
-            </p>
-            <p className="text-xs text-primary">{a.status}</p>
+      {apps.map((a) => {
+        const paid = a.payment_status === "paid";
+        return (
+          <div
+            key={a.id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
+          >
+            <div>
+              <p className="font-bold">{a.full_name}</p>
+              <p className="text-sm text-muted-foreground">
+                {a.phone} {a.vehicle ? `— ${a.vehicle}` : ""}
+              </p>
+              <p className="text-xs text-primary">{a.status}</p>
+              <div className="mt-2 text-xs">
+                <p
+                  className={
+                    paid
+                      ? "font-bold text-green-500"
+                      : a.payment_status === "submitted"
+                        ? "font-bold text-amber-500"
+                        : "font-bold text-red-500"
+                  }
+                >
+                  {paid
+                    ? t("paymentVerified")
+                    : a.payment_status === "submitted"
+                      ? t("paymentSubmitted")
+                      : t("paymentUnpaid")}
+                </p>
+                {a.payment_reference && (
+                  <p className="text-muted-foreground">
+                    {t("paymentInfo")}: {a.payment_holder} ·{" "}
+                    <bdi dir="ltr">**** {a.payment_last4}</bdi> ·{" "}
+                    <bdi dir="ltr">{a.payment_reference}</bdi>
+                    {a.fee_amount ? ` · ${formatPrice(Number(a.fee_amount))}` : ""}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {!paid && (
+                <button
+                  onClick={() => void verifyPayment(a)}
+                  className="rounded-xl border-2 border-green-600 px-4 py-2.5 text-sm font-black text-green-600"
+                >
+                  {t("verifyPayment")}
+                </button>
+              )}
+              <button
+                onClick={() => void decide(a, true)}
+                disabled={!paid}
+                title={!paid ? t("courierMustPay") : undefined}
+                className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-primary-foreground shadow-md shadow-primary/25 disabled:opacity-40"
+              >
+                {t("approve")}
+              </button>
+              <button
+                onClick={() => void decide(a, false)}
+                className="rounded-xl border-2 border-border px-5 py-2.5 text-sm font-black text-muted-foreground"
+              >
+                {t("reject")}
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => void decide(a, true)}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
-            >
-              {t("approve")}
-            </button>
-            <button
-              onClick={() => void decide(a, false)}
-              className="rounded-lg border border-border px-4 py-2 text-sm font-bold text-muted-foreground"
-            >
-              {t("reject")}
-            </button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
+
+function SettingsManager() {
+  const { t } = useI18n();
+  const [fee, setFee] = useState("");
+  const [card, setCard] = useState("");
+  const [holder, setHolder] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.from("app_settings").select("key,value");
+    if (error) setErr(error.message);
+    const map = new Map((data ?? []).map((r) => [r.key, r.value ?? ""]));
+    setFee(map.get("courier_fee") ?? "");
+    setCard(map.get("courier_card_number") ?? "");
+    setHolder(map.get("courier_card_holder") ?? "");
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function save() {
+    setBusy(true);
+    setErr(null);
+    setMsg(null);
+    const { error } = await supabase.from("app_settings").upsert([
+      { key: "courier_fee", value: String(Number(fee) || 0) },
+      { key: "courier_card_number", value: card.trim() },
+      { key: "courier_card_holder", value: holder.trim() },
+    ]);
+    if (error) setErr(error.message);
+    else setMsg(t("saved"));
+    setBusy(false);
+  }
+
+  return (
+    <div className="mt-6 max-w-md space-y-4">
+      <h2 className="text-xl font-black">{t("courierFeeTitle")}</h2>
+      <div>
+        <label className="text-sm text-muted-foreground">{t("courierFee")}</label>
+        <input
+          className={inputCls}
+          type="number"
+          value={fee}
+          onChange={(e) => setFee(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="text-sm text-muted-foreground">{t("cardNumber")}</label>
+        <input
+          className={inputCls}
+          dir="ltr"
+          value={card}
+          onChange={(e) => setCard(e.target.value)}
+          placeholder="6280 XXXX XXXX XXXX"
+        />
+      </div>
+      <div>
+        <label className="text-sm text-muted-foreground">{t("cardHolder")}</label>
+        <input
+          className={inputCls}
+          value={holder}
+          onChange={(e) => setHolder(e.target.value)}
+        />
+      </div>
+      <button
+        disabled={busy}
+        onClick={() => void save()}
+        className="w-full rounded-xl bg-primary px-5 py-4 text-base font-black text-primary-foreground shadow-lg shadow-primary/25 disabled:opacity-60"
+      >
+        {busy ? t("loading") : t("saveSettings")}
+      </button>
+      {msg && <p className="text-sm text-green-500">{msg}</p>}
+      {err && <p className="text-sm text-red-500">{err}</p>}
+    </div>
+  );
+}
+
 
 function OwnersManager() {
   const { t } = useI18n();
