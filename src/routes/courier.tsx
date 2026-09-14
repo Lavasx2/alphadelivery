@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { OrdersBoard } from "@/lib/orders-board";
+import { formatPrice } from "@/lib/menu";
+import { submitCourierPayment } from "@/lib/courier-payment.functions";
+
 
 export const Route = createFileRoute("/courier")({
   head: () => ({
