@@ -153,17 +153,83 @@ function CourierPage() {
       <p className="mt-3 text-sm text-muted-foreground">{t("courierIntro")}</p>
 
       {app ? (
-        <div className="mt-6 space-y-2 rounded-xl border border-border bg-card p-5 text-sm">
-          {sent && <p className="font-bold text-green-500">{t("courierSent")}</p>}
-          <p>
-            {app.status === "rejected"
-              ? t("courierRejected")
-              : app.status === "approved"
-                ? t("courierApproved")
-                : t("courierPending")}
-          </p>
+        <div className="mt-6 space-y-4">
+          <div className="space-y-2 rounded-xl border border-border bg-card p-5 text-sm">
+            {sent && <p className="font-bold text-green-500">{t("courierSent")}</p>}
+            <p>
+              {app.status === "rejected"
+                ? t("courierRejected")
+                : app.status === "approved"
+                  ? t("courierApproved")
+                  : t("courierPending")}
+            </p>
+          </div>
+
+          {app.status !== "rejected" && app.status !== "approved" && (
+            <div className="space-y-3 rounded-2xl border border-primary/40 bg-primary/5 p-5 text-sm">
+              <h2 className="text-lg font-black">{t("courierFeeTitle")}</h2>
+              <p className="text-muted-foreground">{t("courierFeeDesc")}</p>
+              <p className="text-base font-black text-primary">
+                {t("courierFee")}: {formatPrice(app.fee_amount ?? settings.fee)}
+              </p>
+
+              {app.payment_status === "paid" ? (
+                <p className="font-bold text-green-500">{t("paymentVerified")}</p>
+              ) : app.payment_status === "submitted" ? (
+                <p className="font-bold text-amber-500">{t("paymentSubmitted")}</p>
+              ) : settings.card ? (
+                <form onSubmit={payNow} className="space-y-3">
+                  <div className="rounded-xl border border-border bg-card p-4">
+                    <p className="text-xs text-muted-foreground">{t("payToCard")}</p>
+                    <p className="mt-1 text-lg font-black" dir="ltr">
+                      {settings.card}
+                    </p>
+                    {settings.holder && (
+                      <p className="text-xs text-muted-foreground">
+                        {t("cardHolder")}: {settings.holder}
+                      </p>
+                    )}
+                  </div>
+                  <input
+                    className={input}
+                    placeholder={t("cardHolder")}
+                    value={payHolder}
+                    onChange={(e) => setPayHolder(e.target.value)}
+                    required
+                  />
+                  <input
+                    className={input}
+                    placeholder={t("cardLast4")}
+                    inputMode="numeric"
+                    maxLength={4}
+                    dir="ltr"
+                    value={payLast4}
+                    onChange={(e) => setPayLast4(e.target.value)}
+                    required
+                  />
+                  <input
+                    className={input}
+                    placeholder={t("paymentRef")}
+                    dir="ltr"
+                    value={payRef}
+                    onChange={(e) => setPayRef(e.target.value)}
+                    required
+                  />
+                  <button
+                    disabled={busy}
+                    className="w-full rounded-xl bg-primary px-5 py-4 text-base font-black text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:scale-[1.02] disabled:opacity-60"
+                  >
+                    {busy ? t("loading") : t("submitPayment")}
+                  </button>
+                </form>
+              ) : (
+                <p className="text-amber-500">{t("feeNotSet")}</p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
+
         <form onSubmit={apply} className="mt-6 space-y-3">
           <input
             className={input}
