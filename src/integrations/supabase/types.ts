@@ -14,11 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
       courier_applications: {
         Row: {
           created_at: string
+          fee_amount: number | null
           full_name: string
           id: string
+          paid_at: string | null
+          payment_holder: string | null
+          payment_last4: string | null
+          payment_reference: string | null
+          payment_status: string
           phone: string
           status: string
           user_id: string
@@ -26,8 +50,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fee_amount?: number | null
           full_name: string
           id?: string
+          paid_at?: string | null
+          payment_holder?: string | null
+          payment_last4?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           phone: string
           status?: string
           user_id: string
@@ -35,8 +65,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fee_amount?: number | null
           full_name?: string
           id?: string
+          paid_at?: string | null
+          payment_holder?: string | null
+          payment_last4?: string | null
+          payment_reference?: string | null
+          payment_status?: string
           phone?: string
           status?: string
           user_id?: string
