@@ -86,7 +86,7 @@ function OrderPage() {
   async function submitOrder(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name.trim() || !phone.trim()) {
+    if (!phone.trim()) {
       setError(t("fillRequired"));
       return;
     }
@@ -100,7 +100,7 @@ function OrderPage() {
     }
     setLoading(true);
     const { error: dbError } = await supabase.from("orders").insert({
-      customer_name: name.trim(),
+      customer_name: name.trim() || "زائر",
       phone: phone.trim(),
       address: address.trim() || `${quote.lat.toFixed(6)}, ${quote.lng.toFixed(6)}`,
       notes: notes.trim() || null,
@@ -229,13 +229,12 @@ function OrderPage() {
             <form onSubmit={submitOrder} className="mt-4 space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  {t("nameRequired")}
+                  {t("nameOptional")}
                 </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-input bg-card px-4 py-2.5 outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-input bg-card px-4 py-3 outline-none focus:ring-2 focus:ring-ring"
                   placeholder={t("namePlaceholder")}
                 />
               </div>
