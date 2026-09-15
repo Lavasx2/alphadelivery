@@ -46,45 +46,50 @@ function HomePage() {
           <img
             src={banner.url}
             alt="أطباق كراست تبسة: بيتزا، برغر، طاكوس وبانيني"
-            className="size-full object-cover"
+            className="size-full object-cover object-center"
             width={1200}
             height={800}
+            fetchPriority="high"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-l from-background via-background/85 to-background/40" />
+          <div className="absolute inset-0 bg-background/45 md:bg-transparent" />
         </div>
-        <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-4 py-24 md:py-36">
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-5 px-4 py-14 sm:py-20 md:gap-6 md:py-36">
           <div className="flex items-center gap-2 text-sm">
             <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-3 py-1 font-semibold text-primary">
               <Star className="size-4 fill-primary" />
               {RESTAURANT.rating} · {RESTAURANT.ratingCount} {t("ratingOn")}
             </span>
           </div>
-          <h1 className="max-w-2xl text-4xl font-black leading-tight md:text-6xl">
+          <h1 className="max-w-2xl text-[2rem] font-black leading-tight sm:text-4xl md:text-6xl">
             {t("heroTitle")}
             <br />
             <span className="text-primary">{t("heroTitle2")}</span>
           </h1>
-          <p className="max-w-xl text-lg text-muted-foreground">{t("heroDesc")}</p>
-          <div className="flex flex-wrap gap-3">
+          <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
+            {t("heroDesc")}
+          </p>
+          <div className="grid gap-3 sm:flex sm:flex-wrap">
             <Link
               to="/menu"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-bold text-primary-foreground transition-transform hover:scale-105"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-primary px-7 text-lg font-black text-primary-foreground shadow-lg shadow-primary/30 ring-2 ring-primary/40 transition-transform active:scale-[0.98] hover:scale-[1.03] sm:text-xl"
             >
-              <ShoppingBag className="size-5" />
+              <ShoppingBag className="size-6" />
               {t("orderNow")}
             </Link>
             <a
               href={`tel:${RESTAURANT.phone}`}
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 font-bold text-accent-foreground transition-transform hover:scale-105"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-accent px-6 text-base font-bold text-accent-foreground transition-transform active:scale-[0.98] hover:scale-[1.03]"
             >
               <Phone className="size-5" />
-              {RESTAURANT.phone}
+              <bdi dir="ltr">{RESTAURANT.phone}</bdi>
             </a>
             <a
               href={RESTAURANT.mapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-bold transition-colors hover:bg-secondary"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 border-border bg-card px-6 text-base font-bold transition-colors active:scale-[0.98] hover:bg-secondary"
             >
               <MapPin className="size-5 text-primary" />
               {t("ourLocation")}
