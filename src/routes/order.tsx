@@ -86,7 +86,7 @@ function OrderPage() {
   async function submitOrder(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name.trim() || !phone.trim()) {
+    if (!phone.trim()) {
       setError(t("fillRequired"));
       return;
     }
@@ -100,7 +100,7 @@ function OrderPage() {
     }
     setLoading(true);
     const { error: dbError } = await supabase.from("orders").insert({
-      customer_name: name.trim(),
+      customer_name: name.trim() || "زائر",
       phone: phone.trim(),
       address: address.trim() || `${quote.lat.toFixed(6)}, ${quote.lng.toFixed(6)}`,
       notes: notes.trim() || null,
@@ -146,12 +146,14 @@ function OrderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="flex items-center gap-3 text-4xl font-black">
-        <Bike className="size-9 text-primary" />
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
+      <h1 className="flex items-center gap-3 text-2xl font-black sm:text-4xl">
+        <Bike className="size-7 shrink-0 text-primary sm:size-9" />
         {t("orderTitle")}
       </h1>
-      <p className="mt-2 text-muted-foreground">{t("orderIntro")}</p>
+      <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+        {t("orderIntro")}
+      </p>
 
       {lines.length === 0 ? (
         <div className="mt-16 text-center">
@@ -229,13 +231,12 @@ function OrderPage() {
             <form onSubmit={submitOrder} className="mt-4 space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  {t("nameRequired")}
+                  {t("nameOptional")}
                 </label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full rounded-lg border border-input bg-card px-4 py-2.5 outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-lg border border-input bg-card px-4 py-3 outline-none focus:ring-2 focus:ring-ring"
                   placeholder={t("namePlaceholder")}
                 />
               </div>
@@ -285,7 +286,7 @@ function OrderPage() {
                   type="button"
                   onClick={shareLocation}
                   disabled={locating}
-                  className="mt-3 w-full rounded-lg border border-primary/50 bg-primary/10 py-2.5 text-sm font-bold text-primary disabled:opacity-60"
+                  className="mt-3 min-h-12 w-full rounded-xl border-2 border-primary/60 bg-primary/15 text-base font-bold text-primary active:scale-[0.99] disabled:opacity-60"
                 >
                   {locating ? t("locating") : t("shareLocation")}
                 </button>
@@ -348,7 +349,7 @@ function OrderPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-primary py-3.5 text-lg font-black text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                className="min-h-14 w-full rounded-xl bg-primary text-lg font-black text-primary-foreground shadow-lg shadow-primary/25 transition-colors active:scale-[0.99] hover:bg-primary/90 disabled:opacity-50"
               >
                 {loading
                   ? t("sendingOrder")

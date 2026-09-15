@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Flame } from "lucide-react";
+import { Flame, UtensilsCrossed } from "lucide-react";
 import { MENU_ITEMS, SUPPLEMENTS, formatPrice } from "@/lib/menu";
 import { listMenuItems } from "@/lib/menu-public.functions";
 import { localizeItem, localizeSupplement } from "@/lib/menu-i18n";
@@ -68,16 +68,18 @@ function MenuPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-4xl font-black">{t("menu")}</h1>
-      <p className="mt-2 text-muted-foreground">{t("menuIntro")}</p>
+      <h1 className="text-3xl font-black sm:text-4xl">{t("menu")}</h1>
+      <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+        {t("menuIntro")}
+      </p>
 
       {/* Category filter */}
-      <div className="mt-8 flex flex-wrap gap-2">
+      <div className="-mx-4 mt-6 flex snap-x gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:mt-8 sm:flex-wrap sm:overflow-visible sm:px-0">
         {[null, ...categories].map((c) => (
           <button
             key={c ?? "all"}
             onClick={() => setCategory(c)}
-            className={`rounded-full px-5 py-2 text-sm font-bold transition-colors ${
+            className={`min-h-11 shrink-0 snap-start whitespace-nowrap rounded-full px-5 text-sm font-bold transition-colors ${
               category === c
                 ? "bg-primary text-primary-foreground"
                 : "border border-border bg-card text-muted-foreground hover:text-foreground"
@@ -88,40 +90,38 @@ function MenuPage() {
         ))}
       </div>
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {items.map((item) => (
           <div
             key={item.id}
-            className="group overflow-hidden rounded-2xl border border-border bg-card"
+            className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
           >
-            {item.image && (
-              <div className="relative aspect-[4/3] overflow-hidden">
+            <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
+              {item.image ? (
                 <img
                   src={item.image}
                   alt={item.name}
                   loading="lazy"
-                  width={800}
-                  height={600}
+                  decoding="async"
                   className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                {item.popular && (
-                  <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
-                    <Flame className="size-3" /> {t("mostOrdered")}
-                  </span>
-                )}
-              </div>
-            )}
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-lg font-bold">{item.name}</h3>
-                {!item.image && item.popular && (
-                  <Flame className="size-4 shrink-0 text-primary" />
-                )}
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
+              ) : (
+                <div className="flex size-full items-center justify-center bg-gradient-to-br from-primary/20 via-card to-accent/20">
+                  <UtensilsCrossed className="size-10 text-primary/60" />
+                </div>
+              )}
+              {item.popular && (
+                <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
+                  <Flame className="size-3" /> {t("mostOrdered")}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-1 flex-col p-4 sm:p-5">
+              <h3 className="text-base font-bold sm:text-lg">{item.name}</h3>
+              <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
                 {item.description}
               </p>
-              <div className="mt-4 flex items-center justify-between">
+              <div className="mt-4 flex flex-1 items-end justify-between gap-2">
                 <span className="text-lg font-black text-primary">
                   {formatPrice(item.price)}
                 </span>
@@ -131,7 +131,7 @@ function MenuPage() {
                     setAddedId(item.id);
                     setTimeout(() => setAddedId(null), 900);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
+                  className={`min-h-11 shrink-0 rounded-xl px-5 text-sm font-black transition-colors active:scale-[0.98] ${
                     addedId === item.id
                       ? "bg-green-600 text-white"
                       : "bg-primary text-primary-foreground hover:bg-primary/90"
