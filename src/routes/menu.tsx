@@ -68,16 +68,18 @@ function MenuPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-4xl font-black">{t("menu")}</h1>
-      <p className="mt-2 text-muted-foreground">{t("menuIntro")}</p>
+      <h1 className="text-3xl font-black sm:text-4xl">{t("menu")}</h1>
+      <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+        {t("menuIntro")}
+      </p>
 
       {/* Category filter */}
-      <div className="mt-8 flex flex-wrap gap-2">
+      <div className="-mx-4 mt-6 flex snap-x gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:mt-8 sm:flex-wrap sm:overflow-visible sm:px-0">
         {[null, ...categories].map((c) => (
           <button
             key={c ?? "all"}
             onClick={() => setCategory(c)}
-            className={`rounded-full px-5 py-2 text-sm font-bold transition-colors ${
+            className={`min-h-11 shrink-0 snap-start whitespace-nowrap rounded-full px-5 text-sm font-bold transition-colors ${
               category === c
                 ? "bg-primary text-primary-foreground"
                 : "border border-border bg-card text-muted-foreground hover:text-foreground"

@@ -117,16 +117,21 @@ function HomePage() {
 
       {/* Featured dishes */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-3xl font-black">{t("mostOrdered")}</h2>
-            <p className="mt-1 text-muted-foreground">{t("mostOrderedDesc")}</p>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
+          <div className="min-w-0">
+            <h2 className="text-2xl font-black sm:text-3xl">{t("mostOrdered")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+              {t("mostOrderedDesc")}
+            </p>
           </div>
-          <Link to="/menu" className="text-sm font-bold text-primary hover:underline">
+          <Link
+            to="/menu"
+            className="shrink-0 text-sm font-bold text-primary hover:underline"
+          >
             {t("fullMenu")} ←
           </Link>
         </div>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {featuredItems.map((item) => (
             <div
               key={item.id}
@@ -143,7 +148,7 @@ function HomePage() {
                 </span>
                 <button
                   onClick={() => add(item)}
-                  className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="min-h-11 rounded-lg bg-primary px-5 text-sm font-black text-primary-foreground transition-colors active:scale-[0.98] hover:bg-primary/90"
                 >
                   {t("add_")}
                 </button>
@@ -155,7 +160,7 @@ function HomePage() {
 
       {/* Map */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-3xl font-black">{t("visitUs")}</h2>
+        <h2 className="text-2xl font-black sm:text-3xl">{t("visitUs")}</h2>
         <p className="mt-1 flex items-center gap-2 text-muted-foreground">
           <MapPin className="size-4 text-primary" />
           {RESTAURANT.plusCode}، {RESTAURANT.address}
@@ -164,7 +169,7 @@ function HomePage() {
           <iframe
             title={t("mapTitle")}
             src={`https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=place_id:${RESTAURANT.placeId}&language=${lang}&zoom=16`}
-            className="h-96 w-full"
+            className="h-64 w-full border-0 sm:h-96"
             loading="lazy"
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
