@@ -85,7 +85,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     head: () => ({
       meta: [
         { charSet: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        {
+          name: "viewport",
+          content:
+            "width=device-width, initial-scale=1, viewport-fit=cover",
+        },
+        { name: "theme-color", content: "#1a1a1a" },
         { title: "كراست تبسة | Crust Tebessa — بيتزا وطاكوس وبرغر وتوصيل للمنازل" },
         {
           name: "description",
@@ -147,17 +152,21 @@ function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2.5 sm:flex sm:justify-between sm:px-4 sm:py-3">
+        <Link to="/" className="flex min-w-0 items-center gap-2">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <UtensilsCrossed className="size-5" />
           </span>
-          <span className="text-lg font-extrabold">
+          <span className="truncate text-base font-extrabold sm:text-lg">
             كراست <span className="text-primary">تبسة</span>
           </span>
         </Link>
-        <nav className="flex items-center gap-1">
-          <Link to="/" className={linkCls} activeProps={{ className: activeCls }}>
+        <nav className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+          <Link
+            to="/"
+            className={`hidden sm:inline-flex ${linkCls}`}
+            activeProps={{ className: activeCls }}
+          >
             {t("home")}
           </Link>
           <Link
@@ -171,10 +180,11 @@ function Header() {
           <AccountMenu />
           <Link
             to="/order"
-            className="relative ms-2 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+            aria-label={t("myOrder")}
+            className="relative ms-1 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 sm:ms-2 sm:px-4"
           >
-            <ShoppingBag className="size-4" />
-            {t("myOrder")}
+            <ShoppingBag className="size-5 sm:size-4" />
+            <span className="hidden sm:inline">{t("myOrder")}</span>
             {count > 0 && (
               <span className="absolute -top-2 -left-2 flex size-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
                 {count}
