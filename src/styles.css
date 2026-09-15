@@ -89,6 +89,19 @@
     border-color: var(--color-border);
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -97,6 +110,29 @@
 
   h1, h2, h3, h4 {
     font-family: "Cairo", "Tajawal", system-ui, sans-serif;
+    text-wrap: balance;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+  }
+
+  img {
+    height: auto;
+  }
+
+  /* Stop iOS from zooming the page when focusing a field */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
