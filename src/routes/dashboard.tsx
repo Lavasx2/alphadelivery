@@ -49,6 +49,8 @@ type CourierApp = {
   payment_holder: string | null;
   payment_last4: string | null;
   fee_amount: number | null;
+  paused: boolean;
+  subscription_until: string | null;
 };
 
 const inputCls =
