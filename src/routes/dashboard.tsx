@@ -412,15 +412,32 @@ function CouriersManager() {
     await load();
   }
 
+  /** Confirming a payment activates (or extends) a 30-day subscription. */
   async function verifyPayment(app: CourierApp) {
     setErr(null);
+    const current = app.subscription_until
+      ? new Date(app.subscription_until).getTime()
+      : 0;
+    const base = Math.max(current, Date.now());
+    const until = new Date(base + 30 * 24 * 60 * 60 * 1000).toISOString();
     const { error } = await supabase
       .from("courier_applications")
-      .update({ payment_status: "paid" })
+      .update({ payment_status: "paid", subscription_until: until })
       .eq("id", app.id);
     if (error) setErr(error.message);
     await load();
   }
+
+  async function togglePause(app: CourierApp) {
+    setErr(null);
+    const { error } = await supabase
+      .from("courier_applications")
+      .update({ paused: !app.paused })
+      .eq("id", app.id);
+    if (error) setErr(error.message);
+    await load();
+  }
+
 
   return (
     <div className="mt-6 space-y-3">
