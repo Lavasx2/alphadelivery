@@ -39,12 +39,14 @@ export type Database = {
           full_name: string
           id: string
           paid_at: string | null
+          paused: boolean
           payment_holder: string | null
           payment_last4: string | null
           payment_reference: string | null
           payment_status: string
           phone: string
           status: string
+          subscription_until: string | null
           user_id: string
           vehicle: string | null
         }
@@ -54,12 +56,14 @@ export type Database = {
           full_name: string
           id?: string
           paid_at?: string | null
+          paused?: boolean
           payment_holder?: string | null
           payment_last4?: string | null
           payment_reference?: string | null
           payment_status?: string
           phone: string
           status?: string
+          subscription_until?: string | null
           user_id: string
           vehicle?: string | null
         }
@@ -69,12 +73,14 @@ export type Database = {
           full_name?: string
           id?: string
           paid_at?: string | null
+          paused?: boolean
           payment_holder?: string | null
           payment_last4?: string | null
           payment_reference?: string | null
           payment_status?: string
           phone?: string
           status?: string
+          subscription_until?: string | null
           user_id?: string
           vehicle?: string | null
         }
