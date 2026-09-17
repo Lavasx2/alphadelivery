@@ -57,14 +57,27 @@ function MenuPage() {
     [rawItems, lang]
   );
 
+  const dessertItems = useMemo(
+    () =>
+      rawItems
+        .filter((i) => DESSERT_CATEGORIES.includes(i.category))
+        .map((i) => localizeItem(i, lang)),
+    [rawItems, lang]
+  );
+
+  const mainItems = useMemo(
+    () => allItems.filter((_, idx) => !DESSERT_CATEGORIES.includes(rawItems[idx]!.category)),
+    [allItems, rawItems]
+  );
+
   const categories = useMemo(
-    () => Array.from(new Set(allItems.map((i) => i.category))),
-    [allItems]
+    () => Array.from(new Set(mainItems.map((i) => i.category))),
+    [mainItems]
   );
 
   const items = category
-    ? allItems.filter((i) => i.category === category)
-    : allItems;
+    ? mainItems.filter((i) => i.category === category)
+    : mainItems;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
