@@ -30,23 +30,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return ((data ?? []).map((r) => r.role) as Role[]) ?? [];
   }
 
-async function loadRoles(userId: string | undefined) {
-  if (!userId) {
-    setRoles([]);
-    return;
-  }
-  
-  let current = await fetchRoles(userId);
-
-  // اكتب إيميلك هنا بين القوسين
-  if (session?.user?.email === "z3trino00@gmail.com") {
-    if (!current.includes("owner")) {
-      current.push("owner");
+  async function loadRoles(userId: string | undefined) {
+    if (!userId) {
+      setRoles([]);
+      return;
     }
+    let current = await fetchRoles(userId);
+    if (!current.includes("owner")) {
+      // Grants the owner role automatically to allowlisted owner emails.
+      try {
+        const res = await claimOwnerRole();
+        if (res?.granted) current = await fetchRoles(userId);
+      } catch {
+        /* ignore — user simply is not an allowlisted owner */
+      }
+    }
+    setRoles(current);
   }
-
-  setRoles(current);
-}
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
