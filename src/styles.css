@@ -45,6 +45,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sweet: var(--sweet);
+  --color-sweet-soft: var(--sweet-soft);
+  --color-sweet-cream: var(--sweet-cream);
+  --color-sweet-foreground: var(--sweet-foreground);
 }
 
 :root {
@@ -81,6 +85,11 @@
   --sidebar-accent-foreground: oklch(0.97 0.01 90);
   --sidebar-border: oklch(0.28 0.01 90);
   --sidebar-ring: oklch(0.85 0.18 95);
+  /* Desserts palette — taken from the cupcake logo (pink, purple, orange, cream) */
+  --sweet: oklch(0.63 0.24 0);
+  --sweet-soft: oklch(0.5 0.2 310);
+  --sweet-cream: oklch(0.82 0.16 72);
+  --sweet-foreground: oklch(0.98 0.01 90);
 }
 
 

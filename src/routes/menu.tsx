@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Flame, UtensilsCrossed } from "lucide-react";
+import { Cake, Flame, UtensilsCrossed } from "lucide-react";
 import { MENU_ITEMS, SUPPLEMENTS, formatPrice } from "@/lib/menu";
 import { listMenuItems } from "@/lib/menu-public.functions";
 import { localizeItem, localizeSupplement } from "@/lib/menu-i18n";
 import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
+
+/** Categories rendered inside the dedicated desserts section. */
+const DESSERT_CATEGORIES = ["حلويات", "الحلويات", "Desserts", "desserts"];
 
 export const Route = createFileRoute("/menu")({
   loader: async () => {
@@ -57,14 +60,27 @@ function MenuPage() {
     [rawItems, lang]
   );
 
+  const dessertItems = useMemo(
+    () =>
+      rawItems
+        .filter((i) => DESSERT_CATEGORIES.includes(i.category))
+        .map((i) => localizeItem(i, lang)),
+    [rawItems, lang]
+  );
+
+  const mainItems = useMemo(
+    () => allItems.filter((_, idx) => !DESSERT_CATEGORIES.includes(rawItems[idx]!.category)),
+    [allItems, rawItems]
+  );
+
   const categories = useMemo(
-    () => Array.from(new Set(allItems.map((i) => i.category))),
-    [allItems]
+    () => Array.from(new Set(mainItems.map((i) => i.category))),
+    [mainItems]
   );
 
   const items = category
-    ? allItems.filter((i) => i.category === category)
-    : allItems;
+    ? mainItems.filter((i) => i.category === category)
+    : mainItems;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -144,6 +160,73 @@ function MenuPage() {
           </div>
         ))}
       </div>
+
+      {/* Desserts — own sweet palette, filled by the owner from the dashboard */}
+      <section className="mt-14 overflow-hidden rounded-3xl border border-sweet/40 bg-gradient-to-br from-sweet/15 via-sweet-cream/10 to-sweet-soft/15 p-6 sm:p-8">
+        <div className="flex items-center gap-2">
+          <Cake className="size-6 text-sweet" />
+          <h2 className="text-2xl font-black text-sweet sm:text-3xl">
+            {t("desserts")}
+          </h2>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">{t("dessertsDesc")}</p>
+
+        {dessertItems.length === 0 ? (
+          <p className="mt-6 rounded-2xl border border-dashed border-sweet/40 bg-sweet-cream/10 p-6 text-center text-sm text-muted-foreground">
+            {t("dessertsEmpty")}
+          </p>
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {dessertItems.map((item) => (
+              <div
+                key={item.id}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-sweet/30 bg-card"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-sweet-cream/10">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center bg-gradient-to-br from-sweet/25 via-sweet-cream/15 to-sweet-soft/25">
+                      <Cake className="size-10 text-sweet" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col p-4 sm:p-5">
+                  <h3 className="text-base font-bold sm:text-lg">{item.name}</h3>
+                  <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
+                  <div className="mt-4 flex flex-1 items-end justify-between gap-2">
+                    <span className="text-lg font-black text-sweet">
+                      {formatPrice(item.price)}
+                    </span>
+                    <button
+                      onClick={() => {
+                        add(item);
+                        setAddedId(item.id);
+                        setTimeout(() => setAddedId(null), 900);
+                      }}
+                      className={`min-h-11 shrink-0 rounded-xl px-5 text-sm font-black transition-colors active:scale-[0.98] ${
+                        addedId === item.id
+                          ? "bg-green-600 text-white"
+                          : "bg-sweet text-sweet-foreground hover:opacity-90"
+                      }`}
+                    >
+                      {addedId === item.id ? t("added") : t("addToCart")}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {[

@@ -480,9 +480,36 @@ function CouriersManager() {
                     {a.fee_amount ? ` · ${formatPrice(Number(a.fee_amount))}` : ""}
                   </p>
                 )}
+                <p className="mt-1 text-muted-foreground">
+                  {a.subscription_until ? (
+                    <>
+                      {t("subUntil")}:{" "}
+                      <bdi dir="ltr">
+                        {new Date(a.subscription_until).toLocaleDateString()}
+                      </bdi>
+                    </>
+                  ) : (
+                    t("subNone")
+                  )}
+                </p>
+                <p
+                  className={
+                    a.paused
+                      ? "font-bold text-amber-500"
+                      : "font-bold text-green-500"
+                  }
+                >
+                  {a.paused ? t("pausedLabel") : t("activeLabel")}
+                </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => void togglePause(a)}
+                className="rounded-xl border-2 border-amber-500 px-4 py-2.5 text-sm font-black text-amber-500"
+              >
+                {a.paused ? t("resumeCourier") : t("pauseCourier")}
+              </button>
               {!paid && (
                 <button
                   onClick={() => void verifyPayment(a)}
