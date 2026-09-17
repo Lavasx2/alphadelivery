@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Flame, UtensilsCrossed } from "lucide-react";
+import { Cake, Flame, UtensilsCrossed } from "lucide-react";
 import { MENU_ITEMS, SUPPLEMENTS, formatPrice } from "@/lib/menu";
 import { listMenuItems } from "@/lib/menu-public.functions";
 import { localizeItem, localizeSupplement } from "@/lib/menu-i18n";
