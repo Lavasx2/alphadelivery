@@ -7,6 +7,9 @@ import { localizeItem, localizeSupplement } from "@/lib/menu-i18n";
 import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
 
+/** Categories rendered inside the dedicated desserts section. */
+const DESSERT_CATEGORIES = ["حلويات", "الحلويات", "Desserts", "desserts"];
+
 export const Route = createFileRoute("/menu")({
   loader: async () => {
     try {
