@@ -144,6 +144,9 @@ const ar: Dict = {
   // menu page
   menuIntro: "كل أطباقنا محضّرة طازجة عند الطلب — اختر وأضف لسلتك",
   all: "الكل",
+  desserts: "الحلويات",
+  dessertsDesc: "لمسة حلوة تختم بها وجبتك",
+  dessertsEmpty: "قريباً — يضيف صاحب المحل الحلويات من لوحة التحكم",
   added: "تمت الإضافة ✓",
   pizzaSupplements: "إضافات البيتزا",
   tacosSupplements: "إضافات الطاكوس",
