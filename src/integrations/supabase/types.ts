@@ -206,21 +206,27 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          is_owner: boolean | null
           phone: string | null
+          role: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          is_owner?: boolean | null
           phone?: string | null
+          role?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          is_owner?: boolean | null
           phone?: string | null
+          role?: string | null
         }
         Relationships: []
       }
