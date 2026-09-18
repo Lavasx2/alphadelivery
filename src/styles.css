@@ -106,8 +106,16 @@
 
   html,
   body {
-    overflow-x: auto;
+    width: 100%;
+    overflow-x: scroll;
+    overscroll-behavior-x: auto;
     overscroll-behavior-y: none;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    min-width: calc(100% + 1px);
   }
 
   body {
