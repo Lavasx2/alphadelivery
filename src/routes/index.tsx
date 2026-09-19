@@ -5,6 +5,7 @@ import banner from "@/assets/crust-banner.jpg.asset.json";
 import { MENU_ITEMS, RESTAURANT, formatPrice } from "@/lib/menu";
 import { localizeItem } from "@/lib/menu-i18n";
 import { useCart } from "@/lib/cart";
+import { InstallApp } from "@/components/InstallApp";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
@@ -175,6 +176,7 @@ function HomePage() {
             referrerPolicy="no-referrer-when-downgrade"
           />
         </div>
+        <InstallApp />
       </section>
     </div>
   );
