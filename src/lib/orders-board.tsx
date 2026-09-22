@@ -136,7 +136,6 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
     return true;
   });
 
-
   if (loading) return <p className="mt-6 text-muted-foreground">{t("loading")}</p>;
 
   return (
@@ -220,7 +219,6 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
               </div>
             ) : null}
 
-
             <ul className="mt-3 space-y-1 text-sm">
               {lines.map((l, i) => (
                 <li key={i} className="flex justify-between">
@@ -239,13 +237,23 @@ export function OrdersBoard({ mode }: { mode: "owner" | "courier" }) {
               <div className="flex gap-2">
                 {o.status === "new" && (
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      if (!user) return;
+                      // التحقق مما إذا كان السائق يمتلك طلباً نشطاً قيد التوصيل حالياً
+                      const hasActiveOrder = orders.some(
+                        (ord) => ord.courier_id === user.id && ord.status === "delivering"
+                      );
+                      if (hasActiveOrder) {
+                        setErr("عذراً، لديك طلب نشط بالفعل قيد التوصيل. يجب تسليمه أولاً قبل قبول طلب جديد.");
+                        return;
+                      }
+                      setErr(null);
                       void update(o.id, {
                         status: "delivering",
-                        courier_id: user?.id ?? null,
+                        courier_id: user.id,
                         accepted_at: new Date().toISOString(),
-                      })
-                    }
+                      });
+                    }}
                     className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
                   >
                     {t("accept")}
